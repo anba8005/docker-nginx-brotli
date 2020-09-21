@@ -1,4 +1,5 @@
 ARG NGINX_VERSION=1.18.0
+ARG NGINX_RTMP_VERSION=1.2.1
 ARG NGX_BROTLI_COMMIT=25f86f0bac1101b6512135eac5f93c49c63609e3
 ARG CONFIG="\
 		--prefix=/etc/nginx \
@@ -45,12 +46,15 @@ ARG CONFIG="\
 		--with-file-aio \
 		--with-http_v2_module \
 		--add-module=/usr/src/ngx_brotli \
+		--add-module=/usr/src/nginx-rtmp-module \
+		--with-cc-opt=-Wimplicit-fallthrough=0 \
 	"
 
 FROM alpine:3.12
 LABEL maintainer="NGINX Docker Maintainers <docker-maint@nginx.com>"
 
 ARG NGINX_VERSION
+ARG NGINX_RTMP_VERSION
 ARG NGX_BROTLI_COMMIT
 ARG CONFIG
 
@@ -87,6 +91,7 @@ RUN \
 	&& git checkout --recurse-submodules -q FETCH_HEAD \
 	&& git submodule update --init --depth 1 \
 	&& cd .. \
+	&& git clone https://github.com/arut/nginx-rtmp-module.git -b v$NGINX_RTMP_VERSION \
 	&& curl -fSL https://nginx.org/download/nginx-$NGINX_VERSION.tar.gz -o nginx.tar.gz \
 	&& curl -fSL https://nginx.org/download/nginx-$NGINX_VERSION.tar.gz.asc  -o nginx.tar.gz.asc \
         && sha512sum nginx.tar.gz nginx.tar.gz.asc \
